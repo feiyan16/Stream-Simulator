@@ -2,8 +2,8 @@
 const express = require("express");
 const fs = require("fs");
 const app = express()
+require("dotenv").config();
 
-// function for when making get requests for video
 app.get("/", function (req, res) {
     res.sendFile(__dirname + "/index.html");
 });
@@ -15,9 +15,9 @@ app.get("/video", function (req, res) {
       res.status(400).send("Requires Range header");
     }
   
-    // get video stats (about 61MB)
-    const videoPath = "bigbuck.mp4";
-    const videoSize = fs.statSync("bigbuck.mp4").size;
+    // get video stats
+    const videoPath = process.env.VIDEO_PATH;
+    const videoSize = fs.statSync(videoPath).size;
   
     // Parse Range
     // Example: "bytes=32324-"
