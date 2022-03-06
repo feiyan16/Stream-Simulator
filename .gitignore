@@ -1,4 +1,5 @@
-.env
+.DS_STORE
+*.env
 node_modules
 bigbuck.mp4
 package-lock.json
