@@ -10,14 +10,18 @@
               max-width: 650px;
               color: #444;
             }
-          </style>
+        </style>
     </head>
     <body>
         <video id="videoPlayer" width="650" controls muted="muted" autoplay>
             <source src="/video" type="video/mp4" />
         </video>
-        <button>Stop</button>
-        <button>Stutter</button>
-        <button>Slow Down</button>
+        <form method="POST" action="/">
+            <input name = "name" type="submit" value="Pause">
+            <input name = "name" type="submit" value="Slow">
+            <input name = "name" type="submit" value="Fast">
+        </form>
+        <!-- <button>Stutter</button>
+        <button>Slow Down</button> -->
     </body>
 </html>

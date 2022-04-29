@@ -1,8 +1,17 @@
 // imports
 const express = require("express");
+const bodyParser = require("body-parser")
 const fs = require("fs");
 const app = express()
+
+app.use(bodyParser.urlencoded({
+  extended:true
+})); 
+
 require("dotenv").config();
+
+var pause = false
+var slowed = false
 
 app.get("/", function (req, res) {
     res.sendFile(__dirname + "/index.html");
@@ -20,11 +29,16 @@ app.get("/video", function (req, res) {
     const videoSize = fs.statSync(videoPath).size;
   
     // Parse Range
-    // Example: "bytes=32324-"
-    const CHUNK_SIZE = 10 ** 6 // 1MB
+    var CHUNK_SIZE = 10 ** 5 // 1MB
+    if (slowed) {
+      if (CHUNK_SIZE > 10) {
+        CHUNK_SIZE = CHUNK_SIZE / 10 
+      }
+    } else {
+      CHUNK_SIZE = CHUNK_SIZE * 10
+    }
     const start = Number(range.replace(/\D/g, ""));
     const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
-    console.log("Start:", start, "End:", end)
   
     // Create headers
     const contentLength = end - start + 1;
@@ -34,18 +48,41 @@ app.get("/video", function (req, res) {
       "Content-Length": contentLength,
       "Content-Type": "video/mp4",
     };
-    console.log(headers)
   
     // HTTP Status 206 for Partial Content
     res.writeHead(206, headers);
   
     // create video read stream for this particular chunk
     const videoStream = fs.createReadStream(videoPath, { start, end });
-  
-    // Stream the video chunk to the client
     videoStream.pipe(res);
+    videoStream.on('data', (chunk) => {
+      console.log(`Received ${chunk.length} bytes of data.`);
+    });
+
+    if (pause) {
+      videoStream.pause()
+      console.log("paused")
+      setTimeout(() => {
+        videoStream.resume()
+        pause = false
+        console.log("resumed")
+      }, 10000);
+    }
+    
   });
+
+app.post('/', (req, res) => {
+  data = req.body
+  if (data.name == "Pause") {
+    pause = true
+  } else if (data.name == "Slow") {
+    slowed = true
+  } else if (data.name == "Fast") {
+    slowed = false
+  }
+});
 
 app.listen(process.env.PORT, function() {
     console.log(`Listening on port ${process.env.PORT}...`);
 });
+
